@@ -1,6 +1,8 @@
 # MonkeyDemo
 OpenGL app of a spinning monkey head. Flying camera via WASD and SHIFT+SPACE.
 
+![monke!](https://user-images.githubusercontent.com/38915815/193456340-fa8c89fa-dfdb-4f54-952a-2e44db82514a.PNG)
+
 # Steps for Building
 
 This project depends on my game engine, Automata-Engine. You can find that here: https://github.com/BluBloos/Automata-Engine
