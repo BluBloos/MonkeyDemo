@@ -1,25 +1,6 @@
 #include <automata_engine.h>
 #include <string>
 
-/*
-TODO(Noah): 
-
-1. BMP color is red. This is like the difference in formatting between
-source file and what we specify to OpenGL ...
-
-2. Monkey looks a little squashed. Review proj mat and glViewport.
-Edit: Monkey is very squashed. Matrix is bonkers.
-
-3. UVs are messed up. Open in Blender and verify that things are sensible.
-Once we find that things are sensible, do some thinking! I'm pretty sure it has
-to do with assigning TWO UVs to a single vertex. In which case, that would imply
-on the OpenGL side to duplicate vertices ...
-
-4. Need to impl the view matrix -> to allow camera movement.
-  - implies impl of getBasis.
-
-*/
-
 namespace ae = automata_engine;
 
 void GameUpdateAndRender(game_memory_t *gameMemory);
@@ -45,11 +26,6 @@ void ae::Init(game_memory_t *gameMemory) {
   ae::GL::initGlew();
   glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   glEnable(GL_DEPTH_TEST);
-  // TODO(Noah): Does getWindowInfo really belong in platform namespace?
-  // Here's my thought process ... things that belong in platform namespace
-  // are those things that we could do with the platform even if the engine was
-  // not here. But a window ... the engine created it! The engine is managing the
-  // window. Right?
   glViewport(
     0, 0, ae::platform::getWindowInfo().width, ae::platform::getWindowInfo().height);
   char stringBuffer[256];
@@ -65,7 +41,6 @@ void ae::Init(game_memory_t *gameMemory) {
   gameState->suzanneTransform.pos = ae::math::vec3(0.0f, 0.0f, -3.0f);
   loaded_image_t bitmap = ae::io::loadBMP("res\\highres_checker.bmp");
   if (bitmap.pixelPointer == nullptr) { ae::setFatalExit(); return; }
-  //loaded_image_t bitmap = ae::platform::stbImageLoad("res\\WoodenLog_Diffuse_8K.jpg");
   gameState->checkerTexture = ae::GL::createTexture(bitmap.pixelPointer, bitmap.width, bitmap.height);
   ae::io::freeLoadedImage(bitmap);
   // I think is like "bind texture into slot 0 and interpret as TEX 2D"
@@ -84,11 +59,8 @@ void ae::Init(game_memory_t *gameMemory) {
 
 void GameUpdateAndRender(game_memory_t *gameMemory) {
   game_state_t *gameState = ae::getGameState(gameMemory);
-  // TODO(Noah): We gotta be thinking about input latency and being frame
-  // perfect, man. What is the contract of the method below?
   user_input_t userInput = {};
   ae::platform::getUserInput(&userInput);
-  //process input
   float speed = 5 / 60.0f;
   ae::math::mat3_t camBasis = ae::math::mat3(buildRotMat4(
     ae::math::vec3_t(0.0f, gameState->cam.trans.eulerAngles.y, 0.0f)));
@@ -160,5 +132,9 @@ void GameUpdateAndRender(game_memory_t *gameMemory) {
 
 void ae::Close(game_memory_t *gameMemory) {
   game_state_t *gameState = ae::getGameState(gameMemory);
-  // TODO(Noah): Clean up some of the OpenGL resources that we made. 
+  glDeleteProgram(gameState->gameShader);
+  glDeleteTextures(1, &gameState->checkerTexture);
+  glDeleteBuffers(1, &gameState->suzanneIbo.glHandle);
+  glDeleteBuffers(1, &gameState->suzanneVbo.glHandle);
+  glDeleteVertexArrays(1, &gameState->suzanneVao);
 }
