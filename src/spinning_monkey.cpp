@@ -50,7 +50,6 @@ void ae::Init(game_memory_t *gameMemory) {
   if (gameState->suzanne.vertexData == nullptr) { ae::setFatalExit(); return; }
   ae::GL::objToVao(gameState->suzanne, &gameState->suzanneIbo, &gameState->suzanneVbo, 
     &gameState->suzanneVao);
-  ae::io::freeObj(gameState->suzanne);
   glBindVertexArray(gameState->suzanneVao);
   ae::bifrost::registerApp("spinning_monkey", GameUpdateAndRender);
   ae::setUpdateModel(AUTOMATA_ENGINE_UPDATE_MODEL_ATOMIC);
@@ -117,6 +116,12 @@ void GameUpdateAndRender(game_memory_t *gameMemory) {
 
 #ifndef RELEASE   
     ImGui::Begin("MonkeyDemo");
+
+    ImGui::Text("tris / faces: %d", gameState->suzanneIbo.count / 3);
+    ImGui::Text("verts: %f", StretchyBufferCount(gameState->suzanne.vertexData) / 8.f);
+
+    ImGui::Text("");
+
     ae::ImGuiRenderMat4("camProjMat", buildProjMat(gameState->cam));
     ae::ImGuiRenderMat4("camViewMat", buildViewMat(gameState->cam));
     ae::ImGuiRenderMat4((char *)(std::string(gameState->suzanne.modelName) + "Mat").c_str(), 
@@ -132,6 +137,7 @@ void GameUpdateAndRender(game_memory_t *gameMemory) {
 
 void ae::Close(game_memory_t *gameMemory) {
   game_state_t *gameState = ae::getGameState(gameMemory);
+  ae::io::freeObj(gameState->suzanne);
   glDeleteProgram(gameState->gameShader);
   glDeleteTextures(1, &gameState->checkerTexture);
   glDeleteBuffers(1, &gameState->suzanneIbo.glHandle);
